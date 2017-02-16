@@ -49,21 +49,29 @@ class Player:
 PlayerData = namedtuple("PlayerData", "timestamp game_number mu sigma")
 
 
-def do_game(game, players):
+def do_game(game, players, style="allplayer-trueskill"):
     # Takes a game and stores the results
     game_rank_list = []
     player_list = []
     rating_groups = []
-    # Check if the player exists.
-    for user_data in game.users:
+    
+    rankable_users = []
+    if style=="allplayer-trueskill":
+        rankable_users = game.users
+    elif style=="topbottom-trueskill":
+        rankable_users = [game.users[0],game.users[-1]]
+        
+    for user_data in rankable_users:
         if user_data.user_name not in players:
             players[user_data.user_name] = Player(user_data.user_name)
         rating_groups.append({user_data.user_name: players[user_data.user_name].rating})
         game_rank_list.append(user_data.rank)
         player_list.append(user_data.user_name)
     rated_list = rate(rating_groups, game_rank_list)
-    for i in range(len(game.users)):
-        players[game.users[i].user_name].record_match(game.timestamp, rated_list[i][game.users[i].user_name])
+    for i in range(len(rankable_users)):
+        if rankable_users[i].user_name not in players:
+            players[rankable_users[i].user_name] = Player(rankable_users.user_name)
+        players[rankable_users[i].user_name].record_match(game.timestamp, rated_list[i][rankable_users[i].user_name])
 
 
 def plot_players(player_list, players):
@@ -102,7 +110,7 @@ def load_all_games():
         gamelist.append(Game(g))
     return gamelist
         
-def score_with_default_trueskill(gamelist):
+def score_with_default_trueskill(gamelist, style="allplayer-trueskill"):
 
     # Just in case gamelist isn't sorted
     gamelist.sort(key=lambda x: x.id)
@@ -115,7 +123,7 @@ def score_with_default_trueskill(gamelist):
         game_count += 1
         if game_count % 5000 == 0:
             print("%d of %d" %(game_count, len(gamelist)))
-        do_game(g, players)
+        do_game(g, players, style)
     print "Done"
     return players
 
