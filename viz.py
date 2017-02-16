@@ -104,6 +104,7 @@ def load_all_games():
     games.extend(json.load(open("data/games-2362975-2374581.json")))
     games.extend(json.load(open("data/games-2374582-2384577.json")))
     games.extend(json.load(open("data/games-2384578-2405481.json")))
+    games.extend(json.load(open("data/games-2405482-2418383.json")))
 
     gamelist = []
     for g in games:
