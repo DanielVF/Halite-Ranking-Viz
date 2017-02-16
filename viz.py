@@ -49,7 +49,7 @@ class Player:
 PlayerData = namedtuple("PlayerData", "timestamp game_number mu sigma")
 
 
-def do_game(game):
+def do_game(game, players):
     # Takes a game and stores the results
     game_rank_list = []
     player_list = []
@@ -66,7 +66,7 @@ def do_game(game):
         players[game.users[i].user_name].record_match(game.timestamp, rated_list[i][game.users[i].user_name])
 
 
-def plot_players(player_list):
+def plot_players(player_list, players):
     mu_data = {}
     timestamp_data = {}
     for p in player_list:
@@ -83,37 +83,43 @@ def plot_players(player_list):
         trace = Scatter(x=timestamp_data[p], y=mu_data[p], mode="lines", name=p)
         traces.append(trace)
 
-    plotly.plotly.plot(traces)
+    plotly.offline.iplot(traces)
 
 
-games = []
-# To pull data:
-# wget "https://halite.io/api/web/game?previousID=2331401&limit=100000" -O games.json --no-check-certificate
-# replace previousID value with the last game you DO have. it will stop AT that game and NOT pull it.
-directory = "C:/Users/Shummie/Documents/GitHub/Halite-Ranking-Viz/"
-games.extend(json.load(open(directory + "data/games-2331402-2359106.json")))
-games.extend(json.load(open(directory + "data/games-2359107-2362974.json")))
-games.extend(json.load(open(directory + "data/games-2362975-2374581.json")))
-games.extend(json.load(open(directory + "data/games-2374582-2384577.json")))
-games.extend(json.load(open(directory + "data/games-2384578-2399468.json")))
+def load_all_games():    
+    games = []
+    # To pull data:
+    # wget "https://halite.io/api/web/game?previousID=2331401&limit=100000" -O games.json --no-check-certificate
+    # replace previousID value with the last game you DO have. it will stop AT that game and NOT pull it.
+    games.extend(json.load(open("data/games-2331402-2359106.json")))
+    games.extend(json.load(open("data/games-2359107-2362974.json")))
+    games.extend(json.load(open("data/games-2362975-2374581.json")))
+    games.extend(json.load(open("data/games-2374582-2384577.json")))
+    games.extend(json.load(open("data/games-2384578-2405481.json")))
 
-gamelist = []
-for g in games:
-    gamelist.append(Game(g))
+    gamelist = []
+    for g in games:
+        gamelist.append(Game(g))
+    return gamelist
+        
+def score_with_default_trueskill(gamelist):
 
-# Just in case gamelist isn't sorted
-gamelist.sort(key=lambda x: x.id)
+    # Just in case gamelist isn't sorted
+    gamelist.sort(key=lambda x: x.id)
 
-players = {}
+    players = {}
 
-game_count = 0
-for g in gamelist:
-    game_count += 1
-    if game_count % 1000 == 0:
-        print(game_count)
-    do_game(g)
+    game_count = 0
+    print "Loading Games"
+    for g in gamelist:
+        game_count += 1
+        if game_count % 5000 == 0:
+            print("%d of %d" %(game_count, len(gamelist)))
+        do_game(g, players)
+    print "Done"
+    return players
 
-player_name = "shummie"
-
-plot_players(["mzotkiew", "erdman", "shummie", "timfoden", "cdurbin", "nmalaguti", "PeppiKokki", "DexGroves", "ewirkerman", "moonbirth"])
-plot_players(["KalraA v91", "KalraA v92"])
+# player_name = "shummie"
+#
+# plot_players(["mzotkiew", "erdman", "shummie", "timfoden", "cdurbin", "nmalaguti", "PeppiKokki", "DexGroves", "ewirkerman", "moonbirth"])
+# plot_players(["KalraA v91", "KalraA v92"])
