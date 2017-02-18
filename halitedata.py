@@ -13,6 +13,7 @@ class Game:
         self.w = json_object["mapWidth"]
         self.name = json_object["replayName"]
         self.timestamp = json_object["timestamp"]
+        self.worker_id = json_object["workerID"]
         self.has_error = False 
         self.users = []
         for u in range(len(json_object["users"])):
